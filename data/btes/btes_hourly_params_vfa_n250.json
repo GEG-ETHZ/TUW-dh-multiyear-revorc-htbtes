@@ -1,0 +1,92 @@
+{
+  "description": "HT-BTES surrogate for dispatch model. Cylindrical (hex-packed disc) field, H=200m, B=3.0m (250 bh, 50,000m total). Charges at 106C (wellhead brine, Kaufmann et al. ECM 2026), discharges directly to DH network when T_out >= 80C. ARX fitted to pygfunction 20-yr simulation; per-age-block coefficients.",
+  "model_form": "T_state(h+1) = a_h*T_state(h) + b_ch_h*Qch(h) + b_dis_h*Qdis(h) + c_h  [hourly, kWh units]",
+  "resolution": "hourly",
+  "fit": {
+    "a_h": 1.0,
+    "b_ch_h_per_kWh": 4.700929637476553e-06,
+    "b_dis_h_per_kWh": -1.3024341852994073e-05,
+    "c_h_degC": 0.0,
+    "source": "a_d=1, c_d=0 (pure accumulator, no idle dynamics); b_dis pinned to -b_ch/eta_sim per age block so the surrogate round trip equals the simulated energy ratio by construction",
+    "daily_to_hourly_conversion": "a_h = a_d^(1/24), b unchanged (kWh units same), c_h = c_d/24"
+  },
+  "bounds": {
+    "Qdis_max_kWh_per_hour": 2050.1,
+    "Qch_max_kWh_per_hour": 5947.8,
+    "Tmin_degC": 80.8,
+    "Tmax_degC": 106.0,
+    "T_init_degC": 90.6,
+    "UA_dis_kW_per_K": 47.894,
+    "UA_ch_kW_per_K": 228.76,
+    "UA_dis_levels": {
+      "0.0517": {
+        "UA_kW_per_K": 47.894,
+        "C_kW_per_K": 49.469
+      },
+      "0.1000": {
+        "UA_kW_per_K": 88.228,
+        "C_kW_per_K": 95.685
+      },
+      "0.2000": {
+        "UA_kW_per_K": 164.672,
+        "C_kW_per_K": 191.37
+      },
+      "0.3000": {
+        "UA_kW_per_K": 228.76,
+        "C_kW_per_K": 287.055
+      }
+    },
+    "UA_dis_cap_ref_kW_per_K": 47.894,
+    "k_wall_K_per_kW": 0.0016887737068282912
+  },
+  "invest": {
+    "enabled": false,
+    "IK_EUR": 3500000,
+    "lt_yr": 50,
+    "ir": 0.05,
+    "warmup_cost_annual_EUR": 0,
+    "notes": "IK_EUR: drilling 70 EUR/m x 250 boreholes x 200 m = 3,500,000 EUR (drilling only). Ancillaries separate. Warm-up cost set to 0."
+  },
+  "cost_charge": 0.0,
+  "cost_discharge": 2.03,
+  "age_blocks": {
+    "0": {
+      "years": "1-5",
+      "b_ch_h_per_kWh": 3.054532830956499e-06,
+      "b_dis_h_per_kWh": -1.9963448564776593e-05,
+      "rte_pct": 15.3,
+      "T_init": 11.25,
+      "Qch_max_kW": 21675.0,
+      "Qdis_max_kW": 1958.6
+    },
+    "1": {
+      "years": "6-10",
+      "b_ch_h_per_kWh": 5.105075556892439e-06,
+      "b_dis_h_per_kWh": -1.2073702186745515e-05,
+      "rte_pct": 42.3,
+      "T_init": 82.42,
+      "Qch_max_kW": 6250.6,
+      "Qdis_max_kW": 2015.7
+    },
+    "2": {
+      "years": "11-15",
+      "b_ch_h_per_kWh": 5.521502525266556e-06,
+      "b_dis_h_per_kWh": -1.1330677953810317e-05,
+      "rte_pct": 48.7,
+      "T_init": 83.68,
+      "Qch_max_kW": 6057.6,
+      "Qdis_max_kW": 2040.3
+    },
+    "3": {
+      "years": "16-20",
+      "b_ch_h_per_kWh": 5.67468563133698e-06,
+      "b_dis_h_per_kWh": -1.0921197429678282e-05,
+      "rte_pct": 52.0,
+      "T_init": 84.25,
+      "Qch_max_kW": 5947.8,
+      "Qdis_max_kW": 2050.1
+    }
+  },
+  "n_boreholes": 250,
+  "opex_fix_EUR_per_MWh_cap": 4.0
+}

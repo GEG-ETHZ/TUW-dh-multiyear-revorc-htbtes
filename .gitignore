@@ -1,0 +1,40 @@
+# ── Large binaries kept out of GitHub ─────────────────────────────────────
+# Trained revORC / HP surrogate bundles (~2.4 GB; the largest file is 2 GB).
+# The wrapper code and README stay in the repo; obtain the bundles separately
+# (see README "Large files").
+revers_surrogates/models/*.joblib
+
+# Solved scenarios (workbooks, CSVs, plots, Gurobi incumbents)
+results/*
+!results/.gitkeep
+
+# Cached revORC hourly maps (rebuilt on first run)
+data/revorc_maps_cache/
+
+# ── Python ────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+
+# ── Solver / run artefacts ────────────────────────────────────────────────
+gurobi.log
+*.sol
+*.lp
+*.mps
+*.log
+logs/
+
+# ── Editor / OS / Office lock files ───────────────────────────────────────
+.vscode/
+.idea/
+.DS_Store
+~$*
+.~lock*
+*.bak
+*.pre_*
+
+# ── Confidential input data (measured Munich network data, not for publication) ──
+data/DhnData.csv
+data/Munich_DH_data*.xlsx
