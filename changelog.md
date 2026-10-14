@@ -10,5 +10,5 @@ First public version of the paper-2 code.
 - HT-BTES: g-function field simulation, age-block storage surrogate, direct-use discharge rule,
   field-size enumeration.
 - Technology workbooks of the paper (DEA-based data), HT-BTES libraries for the measured and the
-  10 K colder network, public DE-LU spot prices, and a generator for a synthetic hourly example
-  workbook (the measured Munich network data is not distributed).
+  10 K colder network, public DE-LU spot prices, and a synthetic hourly example workbook with
+  its generator.

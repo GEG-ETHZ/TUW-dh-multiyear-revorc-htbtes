@@ -69,16 +69,13 @@ Three temporal formulations share the same constraints:
    If the last command complains about the licence, set
    `export GRB_LICENSE_FILE=/path/to/gurobi.lic` (on Windows: `set GRB_LICENSE_FILE=...`).
 
-4. Use the hourly example workbook `data/example_DH_data.xlsx`. The measured hourly data of
-   the Munich plant (demand, network temperatures) is not public and is not in the repository.
-   The example workbook has the same layout with synthetic profiles (section 5.2) so that every
-   scenario can be run and the workflow learned. `python data/make_example_dh_data.py`
-   regenerates it.
+4. The hourly example workbook `data/example_DH_data.xlsx` provides demand, network and
+   ambient temperatures and prices with synthetic profiles (section 5.2) so that every scenario
+   can be run and the workflow learned. `python data/make_example_dh_data.py` regenerates it.
 
 5. For the revORC scenarios copy the four surrogate bundles into
    `revers_surrogates/models/` (names and layout in
-   `revers_surrogates/README_reversible_ORC_HP_wrappers.txt`). They are not in the repository
-   because of their size.
+   `revers_surrogates/README_reversible_ORC_HP_wrappers.txt`). They are available on request.
 
 Tested with Python 3.14, Pyomo 6.10, Gurobi 13.0, pandas 3.0, numpy 2.4, scikit-learn 1.8,
 tsam 3.2, pygfunction 2.3 on Linux. The code needs Python ≥ 3.10.
@@ -128,8 +125,8 @@ This keeps the MILP small and gives the full curve rather than one point.
 
 Two workbooks in `data/` describe the case completely. The files the scripts read are chosen
 with `TECH_DATA` and `DH_DATA` (defaults `Munich_tech_data.xlsx`, `Munich_DH_data.xlsx`). The
-paper uses `Munich_tech_data_v3.xlsx` and `Munich_DH_data_spot2025.xlsx`; the latter is not
-distributed (section 5.2), the example workbook stands in for it.
+paper uses `Munich_tech_data_v3.xlsx` and `Munich_DH_data_spot2025.xlsx`; the example workbook
+`example_DH_data.xlsx` stands in for the hourly file (section 5.2).
 
 ### 5.1 Technology workbook (`Munich_tech_data*.xlsx`)
 
@@ -205,13 +202,11 @@ typed in.
 | `supply_temp_fixed`, `return_temp_fixed` | design values, constant |
 | `ambient_temp` | ambient temperature °C (required by the revORC ORC mode) |
 
-**Munich workbook (not distributed).** `Munich_DH_data*.xlsx` was built by
-`create_munich_data.py` from the plant's measured data (April 2022 – March 2023, re-sorted to
-a calendar year), and `data/make_spot_prices.py` replaced its price columns with the public
-DE-LU day-ahead prices of a reference year (`data/spot_prices/`), hourly shape kept and the
-annual mean scaled onto a projection per milestone. The data owner does not permit publication
-of the measured series, so neither the workbook nor the raw file is in the repository. Both
-scripts are kept so the derivation is documented.
+**Building a workbook from measurements.** `create_munich_data.py` shows how such a workbook
+is built from a year of measured network data (demand, supply and return temperature, re-sorted
+to a calendar year), and `data/make_spot_prices.py` how the price columns are filled with the
+public DE-LU day-ahead prices of a reference year (`data/spot_prices/`), hourly shape kept and
+the annual mean scaled onto a projection per milestone.
 
 **Example workbook (included).** `data/example_DH_data.xlsx`, written by
 `data/make_example_dh_data.py`, holds synthetic profiles that do not derive from the
@@ -303,10 +298,10 @@ Each run writes `results/<rd|full|rh|RESULTS_SUBDIR>/MILP_<timestamp>_<SCENARIO>
 
 ## 8. Reproducing the paper runs
 
-The paper uses the DEA-based technology workbook `Munich_tech_data_v3.xlsx` (included) and the
-hourly workbook `Munich_DH_data_spot2025.xlsx` (**not included**, see 5.2), and solves every
-scenario for two networks: the measured network temperatures and the same network 10 K colder.
-With the example workbook the same commands run, but the numbers differ from the paper.
+The paper uses the DEA-based technology workbook `Munich_tech_data_v3.xlsx` (included) with
+the hourly workbook of the case study `Munich_DH_data_spot2025.xlsx`, and solves every scenario
+for two networks: the network temperatures as measured and the same network 10 K colder. With
+the example workbook the same commands run, but the numbers differ from the paper.
 
 ```bash
 export TECH_DATA=Munich_tech_data_v3.xlsx DH_DATA=Munich_DH_data_spot2025.xlsx
@@ -383,7 +378,7 @@ Pipeline, all in `data/btes/`:
 
 Shipped generator outputs: labels `t106` (measured network) and `t106s10` (10 K colder
 network), from which the `_vfa` and `_vf` libraries were built with `--k-wall`. These files
-contain only the storage state and daily storage energy of the simulation, not network data.
+contain the storage state and daily storage energy of the simulation.
 
 ## 11. Setting the model up for your own system
 
@@ -410,7 +405,7 @@ contain only the storage state and daily storage energy of the simulation, not n
 
 | Symptom | Cause / fix |
 |---|---|
-| `File not found: .../Munich_DH_data.xlsx` | the Munich hourly workbook is not distributed; set `DH_DATA=example_DH_data.xlsx`, or point `DH_DATA` at your own workbook |
+| `File not found: .../Munich_DH_data.xlsx` | set `DH_DATA=example_DH_data.xlsx`, or point `DH_DATA` at your own workbook |
 | `No HostID specified in license file` or `GurobiError: License expired` | set `GRB_LICENSE_FILE` to the licence file; check `gurobi_cl --license` |
 | `revORC needs the 'ambient_temp' column` | the hourly workbook has no ambient temperature; add it or set `REVORC=0` |
 | `FileNotFoundError: ... .joblib` in an N2/N6 run | surrogate bundles missing in `revers_surrogates/models/` |
@@ -418,7 +413,7 @@ contain only the storage state and daily storage energy of the simulation, not n
 | `btes_hourly_params<suffix>_n<N>.json not found` | borehole count not in the library for that suffix; `ls data/btes/` shows the available sizes |
 | run stops at the time limit with a large gap | HT-BTES runs with the rule are hard MILPs; use `BTES_TIGHT_M`, raise `GRB_TIME_LIMIT`, or seed with `WARM_START` |
 | very slow first revORC run | the 2 GB ORC bundle is loaded and evaluated once; later runs with the same inputs hit the cache |
-| results differ from the paper | the paper needs the Munich hourly workbook (5.2); also check `TECH_DATA`, `BTES_LIB_SUFFIX` and the three BTES method flags of section 8 |
+| results differ from the paper | check `DH_DATA` and `TECH_DATA` (section 8), `BTES_LIB_SUFFIX` and the three BTES method flags |
 
 Stopping a run with `kill <pid>` (not `kill -9`) or Ctrl-C interrupts the solve only: the best
 incumbent is reported and the run folder is written completely.

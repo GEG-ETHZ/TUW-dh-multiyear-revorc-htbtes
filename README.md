@@ -18,7 +18,7 @@ reversible ORC / heat pump and a high-temperature borehole thermal energy storag
 * [Quick start](#quick-start)
 * [Documentation](#documentation)
 * [Repository layout](#repository-layout)
-* [Files not in the repository](#files-not-in-the-repository)
+* [Surrogate data](#surrogate-data)
 * [Contributing](#contributing)
 * [What's new](#whats-new)
 * [Citing](#citing)
@@ -75,14 +75,13 @@ are written as an Excel workbook, CSV files and PNG figures per run.
       finds its licence. If it reports `No HostID specified in license file`, point it at the
       file: `export GRB_LICENSE_FILE=/path/to/gurobi.lic`.
 
-4. Use the hourly example workbook `data/example_DH_data.xlsx` (included). The measured
-   hourly data of the Munich plant is not public (see
-   [Files not in the repository](#files-not-in-the-repository)); the example workbook has the
-   same layout with synthetic profiles and lets every scenario run. It is regenerated with
+4. The hourly example workbook `data/example_DH_data.xlsx` (included) provides demand,
+   network temperatures, ambient temperature and prices for a first run; it is regenerated with
    `python data/make_example_dh_data.py`.
 
 5. **Only for the revORC scenarios:** place the surrogate bundles in
-   `revers_surrogates/models/`. Every other scenario runs without them.
+   `revers_surrogates/models/` (see [Surrogate data](#surrogate-data)). Every other scenario
+   runs without them.
 
 Alternative without conda: `pip install -r requirements.txt` into a Python 3.10+ environment.
 
@@ -133,7 +132,7 @@ run_rh.py                     representative-hours run
 data_loader.py                reads the two Excel workbooks
 orc_surrogate_maps.py         evaluates the revORC surrogates offline -> hourly ORC/HP maps for the MILP
 full_reporting.py, rh_reporting.py, colors.py      reporting and figures
-create_munich_data.py         how the Munich hourly workbook was built from the measured data (input not included)
+create_munich_data.py         builds an hourly workbook from measured network data (bring your own measurements)
 run_nice.sh                   runs any command at the lowest CPU priority
 
 src/models/full_model.py      hourly MILP (class DistrictHeatingModelFull)
@@ -147,7 +146,7 @@ src/utils/economic_calculations.py      discounting, annuities, salvage, escalat
 src/utils/heat_pump_cop.py              Carnot / Hotmaps COP models
 
 revers_surrogates/            revORC surrogate wrappers (design ANN, ORC off-design, HP off-design)
-revers_surrogates/models/     *.joblib bundles  -- NOT in git
+revers_surrogates/models/     *.joblib surrogate bundles (available on request)
 
 data/Munich_tech_data*.xlsx   technologies, storage, prices, geothermal resource, RevORC sheet
 data/example_DH_data.xlsx     synthetic hourly demand, temperatures, prices (+ make_example_dh_data.py)
@@ -162,16 +161,12 @@ docs/                         Getting Started guide, geothermal operating modes
 results/                      run output (git-ignored)
 ```
 
-## Files not in the repository
+## Surrogate data
 
-| Path | Why | How to obtain |
-|---|---|---|
-| `data/Munich_DH_data*.xlsx`, `data/DhnData.csv` | measured hourly demand and network temperatures of the Munich plant; the data owner does not permit publication | the paper's results need these files; contact the authors, release is subject to the data owner's consent. For everything else use `data/example_DH_data.xlsx` |
-| `revers_surrogates/models/*.joblib` | 2.4 GB of trained surrogate bundles (largest file 2.0 GB), above GitHub's file limit | request from the authors or download from the data archive linked in the paper; layout in `revers_surrogates/README_reversible_ORC_HP_wrappers.txt` |
-| `results/` | tens of GB of run output | regenerate with the commands in the Getting Started guide |
-
-The example workbook is generated, not measured: its profiles come from generic heating-curve
-formulas and the public DE-LU day-ahead prices, so results obtained with it differ from the paper.
+The trained revORC surrogate bundles (`revers_surrogates/models/*.joblib`, about 2.4 GB) are
+not included because of their size. They can be requested from the authors; the expected file
+names and folder layout are given in `revers_surrogates/README_reversible_ORC_HP_wrappers.txt`.
+All scenarios without the revORC run without them.
 
 ## Contributing
 
