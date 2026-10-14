@@ -1,0 +1,19 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below. A journal reference will be added on publication."
+title: "Multi-year district-heating optimisation with a reversible ORC/heat pump and a high-temperature borehole storage"
+type: software
+authors:
+  - family-names: Patel
+    given-names: Nirav
+repository-code: "https://github.com/nirav0906/dh-multiyear-revorc-htbtes"
+license: Apache-2.0
+keywords:
+  - district heating
+  - capacity expansion
+  - MILP
+  - Pyomo
+  - geothermal
+  - organic Rankine cycle
+  - heat pump
+  - borehole thermal energy storage
+  - representative days
