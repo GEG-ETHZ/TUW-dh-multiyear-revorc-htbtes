@@ -17,6 +17,12 @@ __pycache__/
 .pytest_cache/
 .venv/
 venv/
+.mypy_cache/
+.ruff_cache/
+.tox/
+.nox/
+.coverage
+htmlcov/
 
 # ── Solver / run artefacts ────────────────────────────────────────────────
 gurobi.log
