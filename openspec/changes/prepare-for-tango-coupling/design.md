@@ -70,4 +70,5 @@ To agree. We have drafted items 1 to 4.
 6. How should TANGO read hourly dispatch from the representative-day model, given that the rebuilt hourly dispatch does not balance demand exactly?
 7. Is HiGHS acceptable as the default, with Gurobi optional? Does anything rely on Gurobi-specific behaviour (for example `NumericFocus` for the BTES block)?
 8. Is the HT-BTES library valid if TANGO supplies a different production temperature or network temperatures, or must it be regenerated?
-9. Would you like to keep the `openspec/` folder (these documents) in the repository, or keep this discussion in a pull request or an issue?
+9. Which model should optimize how much heat or power is supplied, and whether power or heat comes from the geothermal source directly or via the reversible heat pump: this model's MILP, or TANGO's optimizer (`pymoo_api`), over the whole horizon or year by year? Raised in our call of 2026-11-24. TANGO's optimizer is evolutionary and needs thousands of model runs, so it suits a few design or strategy variables, with this model's MILP solving the hourly dispatch inside each run; that is only practical if one run takes seconds (the base case does; the HT-BTES case, at about 20 minutes, does not).
+10. Would you like to keep the `openspec/` folder (these documents) in the repository, or keep this discussion in a pull request or an issue?
