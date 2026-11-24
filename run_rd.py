@@ -2358,7 +2358,9 @@ def main():
     # revORC dead-hour sensitivity (env REVORC_DEAD_HOURS): folder tagged _DH<n>
     _dhsuf = (f"_DH{float(os.environ['REVORC_DEAD_HOURS']):g}"
               if os.environ.get('REVORC_DEAD_HOURS') else "")
-    results_dir = root / 'results' / 'rd' / f'MILP_{ts}_{SCENARIO}{_tsuf}{_csuf}{_psuf}{_psuf2}{_gsuf}{_esuf}{_emsuf}{_dhsuf}'
+    # RESULTS_ROOT (as in run_rh.py) moves the results/ folder elsewhere, e.g. into a
+    # temporary directory for the tests; the inputs are still read from data/.
+    results_dir = Path(os.environ.get('RESULTS_ROOT', root)) / 'results' / 'rd' / f'MILP_{ts}_{SCENARIO}{_tsuf}{_csuf}{_psuf}{_psuf2}{_gsuf}{_esuf}{_emsuf}{_dhsuf}'
     results_dir.mkdir(parents=True, exist_ok=True)
     # keep a full log next to the results, so a run can be inspected afterwards
     logger.add(results_dir / "run.log", level="INFO", enqueue=True,
