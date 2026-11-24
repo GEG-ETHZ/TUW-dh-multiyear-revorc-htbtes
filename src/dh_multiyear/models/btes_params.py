@@ -45,7 +45,8 @@ def _design_library() -> Dict[str, Any]:
     if _DESIGN_LIBRARY_CACHE is None:
         import os
         _sfx = os.environ.get("BTES_LIB_SUFFIX", "")
-        lib = Path(__file__).resolve().parents[2] / "data" / "btes" / f"design_library{_sfx}.json"
+        from dh_multiyear import PROJECT_ROOT
+        lib = PROJECT_ROOT / "data" / "btes" / f"design_library{_sfx}.json"
         try:
             _DESIGN_LIBRARY_CACHE = json.loads(lib.read_text())
         except Exception:

@@ -493,7 +493,8 @@ def load_all_munich_data(
 # ── Quick sanity check ────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
-    _DATA = Path(__file__).parent / "data"
+    from dh_multiyear import PROJECT_ROOT
+    _DATA = PROJECT_ROOT / "data"
     techs, stor, prices, demand, extra, hp = load_all_munich_data(
         tech_file   = _DATA / "Munich_tech_data.xlsx",
         demand_file = _DATA / "Munich_DH_data.xlsx",
