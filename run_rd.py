@@ -995,11 +995,10 @@ def export_excel(model, res, results_dir, comp_params=None):
                 pd.DataFrame(soc_data).to_excel(writer, sheet_name=f'soc_{year}', index=False)
 
         # ── Hourly dispatch per year ──────────────────────────────────────────
-        demand_mw = model.demand_data['heat_demand'].values
         for year in INVESTMENT_YEARS:
             df_d, stor_dis, stor_chg = _reconstruct_8760(model, year)
             if df_d.empty: continue
-            row = {'Hour': list(range(8760)), 'Demand_MW': list(demand_mw)}
+            row = {'Hour': list(range(8760)), 'Demand_MW': list(_demand_for(model, year))}
             for t in df_d.columns: row[t] = df_d[t].tolist()
             for k, v in stor_dis.items(): row[k] = v
             for k, v in stor_chg.items(): row[k] = v
@@ -1021,12 +1020,11 @@ def export_excel(model, res, results_dir, comp_params=None):
             df_mode.pivot(index='Year', columns='Mode', values='Total_heat_MWh').fillna(0)\
                 .to_excel(writer, sheet_name='mode_heat_gen')
             _compute_economics_table(model).to_excel(writer, sheet_name='hthp_economics', index=False)
-            demand_mw = model.demand_data['heat_demand'].values
             for year in INVESTMENT_YEARS:
                 du, ci_arr, ti = _reconstruct_mode_8760(model, year)
                 pd.DataFrame({
                     'Hour':      range(8760),
-                    'Demand_MW': demand_mw,
+                    'Demand_MW': _demand_for(model, year),
                     'Mode':      ['DU' if d else ('CI' if c else 'TI')
                                   for d, c, t in zip(du, ci_arr, ti)],
                     'Mode_DU':   du.tolist(),
