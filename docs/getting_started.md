@@ -246,6 +246,7 @@ Case and solver settings:
 | `GRB_TIME_LIMIT` (rd) / `TIMELIMIT_S` (full) | 1800 / 172800 | time limit in seconds |
 | `WARM_START` | – | RD run folder (or its `results_rd.xlsx`) whose capacities seed the full model |
 | `RESULTS_SUBDIR` (full), `RUN_TAG` | `full`, `` | output folder under `results/`, tag appended to the folder name |
+| `RESULTS_ROOT` (rd, rh) | repository folder | folder in which `results/` is created |
 | `NO_REPORT` | – | `1` skips plots and workbook |
 
 Temporal aggregation (`run_rd.py`, `run_rh.py`):
