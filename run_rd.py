@@ -16,12 +16,16 @@ import pandas as pd
 import matplotlib
 import matplotlib.pyplot as plt
 
-matplotlib.rcParams.update({
-    'font.size': 20, 'axes.labelsize': 21, 'axes.titlesize': 21,
-    'xtick.labelsize': 18, 'ytick.labelsize': 18,
-    'legend.fontsize': 18, 'figure.titlesize': 21,
-    'axes.spines.top': False, 'axes.spines.right': False,
-})
+
+def set_plot_style():
+    """Font sizes and axes style of all figures (also used by run_full / run_rh)."""
+    matplotlib.rcParams.update({
+        'font.size': 20, 'axes.labelsize': 21, 'axes.titlesize': 21,
+        'xtick.labelsize': 18, 'ytick.labelsize': 18,
+        'legend.fontsize': 18, 'figure.titlesize': 21,
+        'axes.spines.top': False, 'axes.spines.right': False,
+    })
+
 
 from datetime import datetime
 from loguru import logger
@@ -30,8 +34,8 @@ import pyomo.environ as pyo
 
 
 # ── Graceful stop ────────────────────────────────────────────────────────────
-# Registered at import time so it is active during model build as well as during
-# the solve. SIGTERM/SIGINT become KeyboardInterrupt: the solve wrapper catches it
+# Registered at the start of main() so it is active during model build as well as
+# during the solve. SIGTERM/SIGINT become KeyboardInterrupt: the solve wrapper catches it
 # and the run continues to the reporting step instead of dying, so `kill <pid>`
 # (NOT kill -9) stops a run early and still writes results. Gurobi additionally
 # dumps every new incumbent to <run>/incumbent_N.sol via the SolFiles parameter,
@@ -65,11 +69,13 @@ _IN_SOLVE = False
 _STOP_REQUESTS = 0
 
 
-for _sig in (_signal.SIGINT, _signal.SIGTERM):
-    try:
-        _signal.signal(_sig, _graceful_stop)
-    except (ValueError, OSError):
-        pass
+def _install_stop_handler():
+    for _sig in (_signal.SIGINT, _signal.SIGTERM):
+        try:
+            _signal.signal(_sig, _graceful_stop)
+        except (ValueError, OSError):
+            pass
+
 
 GRB_THREADS = int(os.environ.get('GRB_THREADS', 40))
 
@@ -82,11 +88,15 @@ GRB_THREADS = int(os.environ.get('GRB_THREADS', 40))
 # carries its own demand or price SHAPE. Override with TSA_MODE=joint.
 TSA_MODE = os.environ.get('TSA_MODE', 'per_period')
 
-try:
-    os.sched_setaffinity(0, set(range(1, 41)))
-    logger.info("CPU affinity set to cores 1–40")
-except (AttributeError, OSError) as e:
-    logger.warning(f"Could not set CPU affinity: {e}")
+
+def set_cpu_affinity():
+    """Pin the process to cores 1-40 (Linux only; logged and skipped elsewhere)."""
+    try:
+        os.sched_setaffinity(0, set(range(1, 41)))
+        logger.info("CPU affinity set to cores 1–40")
+    except (AttributeError, OSError) as e:
+        logger.warning(f"Could not set CPU affinity: {e}")
+
 
 # ── Paths ─────────────────────────────────────────────────────────────────────
 _CASE_DIR     = Path(__file__).parent.resolve()          # paper2_munich/
@@ -2307,7 +2317,28 @@ def save_mode_plots(model, results_dir):
 
 
 # ── Main ───────────────────────────────────────────────────────────────────────
+# loguru handlers added by a run (its run.log); removed again when the run ends
+_RUN_LOG_HANDLERS: list = []
+
+
 def main():
+    """Run one scenario, configured by environment variables.
+
+    The process-wide settings (stop handler, CPU affinity, plot style, run.log
+    handler) are made here and not at import, so `import run_rd` changes nothing.
+    """
+    _install_stop_handler()
+    set_cpu_affinity()
+    set_plot_style()
+    try:
+        _run()
+    finally:
+        for _h in _RUN_LOG_HANDLERS:
+            logger.remove(_h)
+        _RUN_LOG_HANDLERS.clear()
+
+
+def _run():
     root = _CASE_DIR
     ts   = datetime.now().strftime('%Y%m%d_%H%M%S')
     # Scenario selector (env SCENARIO): S1 = no storage, S2 = HT-BTES only,
@@ -2360,8 +2391,9 @@ def main():
     results_dir = Path(os.environ.get('RESULTS_ROOT', root)) / 'results' / 'rd' / f'MILP_{ts}_{SCENARIO}{_tsuf}{_csuf}{_psuf}{_psuf2}{_gsuf}{_esuf}{_emsuf}{_dhsuf}'
     results_dir.mkdir(parents=True, exist_ok=True)
     # keep a full log next to the results, so a run can be inspected afterwards
-    logger.add(results_dir / "run.log", level="INFO", enqueue=True,
-               format="{time:HH:mm:ss} | {level:<7} | {message}")
+    _RUN_LOG_HANDLERS.append(
+        logger.add(results_dir / "run.log", level="INFO", enqueue=True,
+                   format="{time:HH:mm:ss} | {level:<7} | {message}"))
     logger.info(f"Munich RD model [{SCENARIO}] — output folder: {results_dir}")
 
     # TECH_DATA / DH_DATA override the input workbooks (file name or full path).

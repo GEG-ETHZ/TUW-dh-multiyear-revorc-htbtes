@@ -38,7 +38,8 @@ from dh_multiyear.data_loader import load_all_munich_data, build_uc_params      
 from dh_multiyear.models.rh_model import DistrictHeatingModelRH                 # noqa: E402
 from dh_multiyear.utils.solver import get_solver_name                           # noqa: E402
 from run_rd import (derive_saphea_capacities, _inject_revorc_tech,
-                    GEO_TECH, HTHP_TECH, REVORC_TECH)               # noqa: E402
+                    GEO_TECH, HTHP_TECH, REVORC_TECH,
+                    set_cpu_affinity, set_plot_style)              # noqa: E402
 from dh_multiyear.orc_surrogate_maps import load_revorc_config, build_revorc_maps  # noqa: E402
 from dh_multiyear.models.saphea_revorc_rh import (build_saphea_rh, build_revorc_rh,
                                      rep_hour_profile)              # noqa: E402
@@ -53,6 +54,9 @@ SUPPORTED = {"N1", "N2", "N3", "N4", "N5", "N6"}
 
 
 def main():
+    # importing run_rd used to set these as a side effect; they are now explicit
+    set_cpu_affinity()
+    set_plot_style()
     t_start = time.perf_counter()
     scenario = os.environ.get("SCENARIO", "N1").upper()
     if scenario not in SUPPORTED:
