@@ -886,7 +886,7 @@ def _compute_cost_co2_breakdown(model):
 
     records = []
     for t in m.TECH:
-        carrier = model.technologies[t].get('carrier', '')
+        carrier = model.technologies[t].get('energy_carrier', '')
         for p in m.PERIODS:
             annual_gen     = 0.0
             fuel_kwh       = 0.0   # MWh of primary fuel or electricity consumed
