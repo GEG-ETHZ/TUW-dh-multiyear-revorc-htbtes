@@ -1,6 +1,6 @@
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue)](environment.yml)
-[![Solver](https://img.shields.io/badge/solver-Gurobi-red)](https://www.gurobi.com/)
+[![Solver](https://img.shields.io/badge/solver-HiGHS%20%7C%20Gurobi-red)](#choosing-the-solver)
 
 ---
 # Multi-year district-heating optimisation with revORC and HT-BTES
@@ -31,7 +31,8 @@ reversible ORC / heat pump and a high-temperature borehole thermal energy storag
 
 This repository holds the code and input data behind the Munich case study of a multi-year
 district-heating (DH) planning model. The model is a Mixed-Integer Linear Programme written in
-[Pyomo](https://pyomo.readthedocs.io/) and solved with [Gurobi](https://www.gurobi.com/). It
+[Pyomo](https://pyomo.readthedocs.io/) and solved with [HiGHS](https://highs.dev/) (default) or
+[Gurobi](https://www.gurobi.com/). It
 decides, jointly, which capacities to build at each 5-year investment milestone of a 2025–2045
 horizon and how to dispatch the plant hour by hour, minimising the total discounted system cost
 (investment, fixed and variable O&M, fuel, electricity, CO2, minus electricity revenue).
@@ -58,8 +59,6 @@ are written as an Excel workbook, CSV files and PNG figures per run.
 
 ## How to install
 
-> ### **Before you continue, install the [Gurobi solver](https://www.gurobi.com/downloads/) and obtain a licence (free academic licences are available).**
-
 1. Install [Miniconda](https://docs.conda.io/en/latest/miniconda.html).
 
 2. Download this [repository](https://github.com/nirav0906/dh-multiyear-revorc-htbtes/archive/main.zip)
@@ -71,7 +70,9 @@ are written as an Excel workbook, CSV files and PNG figures per run.
 
    b. `conda activate dh-multiyear`
 
-   c. `python -c "import gurobipy; print(gurobipy.gurobi.version())"` to check that Gurobi
+   c. Only if you want to solve with Gurobi (see [Choosing the solver](#choosing-the-solver)):
+      `pip install gurobipy`, then
+      `python -c "import gurobipy; print(gurobipy.gurobi.version())"` to check that Gurobi
       finds its licence. If it reports `No HostID specified in license file`, point it at the
       file: `export GRB_LICENSE_FILE=/path/to/gurobi.lic`.
 
@@ -85,6 +86,16 @@ are written as an Excel workbook, CSV files and PNG figures per run.
 
 Alternative without conda: `pip install -r requirements.txt` into a Python 3.10+ environment.
 
+### Choosing the solver
+
+The solver is chosen with the environment variable `SOLVER`. The default, `appsi_highs`, is the
+open-source [HiGHS](https://highs.dev/) solver (installed with `highspy`, no licence needed);
+it solves the small scenarios such as N1 on representative days in seconds. `SOLVER=gurobi`
+uses Gurobi with the same settings as before (install `gurobipy` and a licence); it is
+recommended for the large HT-BTES and full 8,760 h runs. With HiGHS only the MIP gap and the time
+limit (`GRB_MIP_GAP`/`MIPGAP`, `GRB_TIME_LIMIT`/`TIMELIMIT_S`) are passed on; the Gurobi
+tuning parameters, the `gurobi.log` and the incumbent files exist only with Gurobi.
+
 ## Quick start
 
 Activate the environment and run the base scenario on representative days with the example data:
@@ -97,7 +108,7 @@ SCENARIO=N1 python run_rd.py
 ```
 
 The run folder appears under `results/rd/MILP_<timestamp>_N1/` with the results workbook,
-hourly dispatch CSVs, the Gurobi log and figures. Every setting is an environment variable, so a
+hourly dispatch CSVs, the solver log (Gurobi only) and figures. Every setting is an environment variable, so a
 scenario is one command line:
 
 ```bash

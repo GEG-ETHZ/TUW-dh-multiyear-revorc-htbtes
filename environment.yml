@@ -1,11 +1,10 @@
 name: dh-multiyear
 channels:
   - conda-forge
-  - gurobi
 dependencies:
   - python>=3.10
-  - gurobi>=11.0          # needs a licence; free academic licences via grbgetkey
   - pyomo>=6.7
+  - highspy>=1.7          # HiGHS, the default solver (SOLVER=appsi_highs)
   - pandas>=2.0
   - numpy>=1.24
   - scipy>=1.11
@@ -15,6 +14,8 @@ dependencies:
   - joblib>=1.3
   - pip
   - pip:
-      - tsam>=2.3         # representative-day clustering
+      - tsam>=3,<4        # representative-day clustering; tsam 4 changed its API
       - loguru>=0.7
-      - pygfunction>=2.2  # HT-BTES field simulation (data/btes/gen, validation)
+      # Optional, uncomment if needed:
+      # - gurobipy>=11.0  # only for SOLVER=gurobi; needs a licence (free academic licences via grbgetkey)
+      # - pygfunction>=2.2  # only for the HT-BTES field simulation in data/btes/gen

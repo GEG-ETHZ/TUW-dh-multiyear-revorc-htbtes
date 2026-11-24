@@ -35,6 +35,7 @@ from models.btes_params import (period_params_for_build, load_arx_params,
                                load_design_library, period_params_for_design)
 from models.btes_constraints import (add_btes_to_rd_model,
                                      add_btes_designs_to_rd_model)
+from utils.solver import get_solver_name, is_gurobi, translate_options
 from utils.economic_calculations import (
     planning_horizon_end_year,
     linear_salvage_fraction_of_capex,
@@ -1347,13 +1348,22 @@ class DistrictHeatingModel:
     # ──────────────────────────────────────────────────────────────────
     #  SOLVE
     # ──────────────────────────────────────────────────────────────────
-    def solve(self, solver_name="gurobi", tee=True, **solver_options):
-        """Solve the optimisation model."""
+    def solve(self, solver_name=None, tee=True, **solver_options):
+        """Solve the optimisation model.
+
+        solver_name defaults to the SOLVER environment variable (see
+        utils/solver.py). Options are given in Gurobi names; for other solvers
+        only the MIP gap and the time limit are passed on.
+        """
+        solver_name = solver_name or get_solver_name()
         logger.info(f"Solving with {solver_name} …")
         solver = SolverFactory(solver_name)
-        solver.options["MIPGap"] = solver_options.get("MIPGap", 0.01)
-        for k, v in solver_options.items():
-            solver.options[k] = v
+
+        def _set_options(opts):
+            for k, v in translate_options(solver_name, opts).items():
+                solver.options[k] = v
+
+        _set_options({"MIPGap": solver_options.get("MIPGap", 0.01), **solver_options})
         results = None
         # Two-phase warm start for the discrete discharge-flow levels (env
         # BTES_LEVEL_WARMSTART=1): solve the fixed-flow model first (all level
@@ -1366,11 +1376,10 @@ class DistrictHeatingModel:
             lvl = self.model.btes_lvl
             for idx in lvl:
                 lvl[idx].fix(0)
-            ph1 = dict(solver.options)
+            ph1 = {"MIPGap": solver_options.get("MIPGap", 0.01), **solver_options}
             ph1["TimeLimit"] = int(_os.environ.get("BTES_WARMSTART_TIMELIMIT", 900))
             ph1["MIPGap"] = float(_os.environ.get("BTES_WARMSTART_GAP", 0.001))
-            for k, v in ph1.items():
-                solver.options[k] = v
+            _set_options(ph1)
             logger.info("Warm-start phase 1: levels fixed at 0 (fixed-flow model)")
             try:
                 r1 = solver.solve(self.model, tee=tee, load_solutions=False)
@@ -1384,11 +1393,12 @@ class DistrictHeatingModel:
                 lvl[idx].unfix()
                 if lvl[idx].value is None:
                     lvl[idx].value = 0
-            for k, v in solver_options.items():
-                solver.options[k] = v
-            solver.options["MIPGap"] = solver_options.get("MIPGap", 0.01)
+            _set_options({**solver_options, "MIPGap": solver_options.get("MIPGap", 0.01)})
+        # warmstart is a keyword not every Pyomo solver interface accepts; Gurobi
+        # always gets it as before, other solvers only when there is a start.
+        warm_kw = {"warmstart": warm} if (is_gurobi(solver_name) or warm) else {}
         try:
-            results = solver.solve(self.model, tee=tee, load_solutions=False, warmstart=warm)
+            results = solver.solve(self.model, tee=tee, load_solutions=False, **warm_kw)
         except KeyboardInterrupt:
             logger.warning("Keyboard interrupt received during the solve.")
         # An interrupted solve comes back with status "aborted", and load_from()

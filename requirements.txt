@@ -1,5 +1,5 @@
-gurobipy>=11.0
 pyomo>=6.7
+highspy>=1.7          # HiGHS, the default solver (SOLVER=appsi_highs)
 pandas>=2.0
 numpy>=1.24
 scipy>=1.11
@@ -7,6 +7,9 @@ matplotlib>=3.7
 openpyxl>=3.1
 scikit-learn>=1.3
 joblib>=1.3
-tsam>=2.3
+tsam>=3,<4            # tsam 4 changed its API; time_aggregation.py needs 3.x
 loguru>=0.7
-pygfunction>=2.2
+
+# Optional:
+# gurobipy>=11.0      # only for SOLVER=gurobi; needs a licence
+# pygfunction>=2.2    # only for the HT-BTES field simulation in data/btes/gen

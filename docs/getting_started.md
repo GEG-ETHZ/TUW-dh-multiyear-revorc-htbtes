@@ -55,15 +55,19 @@ Three temporal formulations share the same constraints:
 
 ## 2. Installation
 
-1. Install [Gurobi](https://www.gurobi.com/downloads/) and a licence. Academic users get a
-   free licence with `grbgetkey`. The model has no fallback to another solver.
+1. Choose a solver with the environment variable `SOLVER`. The default, `appsi_highs`, is the
+   open-source HiGHS solver (`highspy`, installed with the environment, no licence). For
+   `SOLVER=gurobi` install [Gurobi](https://www.gurobi.com/downloads/) (`pip install gurobipy`)
+   and a licence; academic users get a free licence with `grbgetkey`. Gurobi is what the paper
+   runs used and what the large HT-BTES and full 8,760 h runs need in practice; with HiGHS only
+   the MIP gap and the time limit are passed on, not the Gurobi tuning parameters.
 2. Install [Miniconda](https://docs.conda.io/en/latest/miniconda.html).
 3. Download or clone the repository and, in its folder:
 
    ```bash
    conda env create -f environment.yml
    conda activate dh-multiyear
-   python -c "import gurobipy; print(gurobipy.gurobi.version())"
+   python -c "import gurobipy; print(gurobipy.gurobi.version())"   # only for SOLVER=gurobi
    ```
 
    If the last command complains about the licence, set
@@ -236,7 +240,8 @@ Case and solver settings:
 | `SCENARIO` | `S3` (rd) / `S1` (full) | see section 4 |
 | `TECH_DATA`, `DH_DATA` | `Munich_tech_data.xlsx`, `Munich_DH_data.xlsx` | workbooks in `data/`; set `DH_DATA=example_DH_data.xlsx` unless you have the Munich data |
 | `NET_TEMP_SHIFT_K` | 0 | shift measured supply and return temperatures down by this many K |
-| `GRB_THREADS` | 40 | solver threads |
+| `SOLVER` | `appsi_highs` | Pyomo solver name: `appsi_highs` (HiGHS) or `gurobi`; see section 2 |
+| `GRB_THREADS` | 40 | solver threads (Gurobi only) |
 | `GRB_MIP_GAP` (rd) / `MIPGAP` (full) | 0.005 / 0.0025 | relative MIP gap |
 | `GRB_TIME_LIMIT` (rd) / `TIMELIMIT_S` (full) | 1800 / 172800 | time limit in seconds |
 | `WARM_START` | – | RD run folder (or its `results_rd.xlsx`) whose capacities seed the full model |
@@ -306,7 +311,7 @@ the example workbook the same commands run, but the numbers differ from the pape
 ```bash
 export TECH_DATA=Munich_tech_data_v3.xlsx DH_DATA=Munich_DH_data_spot2025.xlsx
 export BTES_TEMP_RULE=1 BTES_FLOW_CONTINUOUS=1 BTES_TIGHT_M=65     # HT-BTES method of the paper
-export GRB_THREADS=20
+export SOLVER=gurobi GRB_THREADS=20                                   # paper runs used Gurobi
 
 # ── measured network ──────────────────────────────────────────────────────
 export BTES_LIB_SUFFIX=_vfa; unset NET_TEMP_SHIFT_K
