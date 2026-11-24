@@ -297,7 +297,7 @@ Each run writes `results/<rd|full|rh|RESULTS_SUBDIR>/MILP_<timestamp>_<SCENARIO>
 | File | Content |
 |---|---|
 | `results_rd.xlsx` | sheets `summary` (objective, model size), `computational`, `capacity`, `generation`, `cost_co2_breakdown`, `co2_by_tech`, `running_cost_by_tech`, `capex_by_tech`, `fuel_cost_by_tech`, `dispatch_<year>`, `mode_stats`, `mode_hours`, `mode_heat_gen`, `hthp_economics`, `mode_dispatch_<year>` |
-| `dispatch_hourly_<year>.csv` | hourly dispatch per technology, storage charge/discharge, reinjected heat, revORC mode |
+| `dispatch_hourly_<year>.csv` | hourly demand of that milestone, heat per technology, storage discharge/charge (only storages that are used), ORC electricity output (with revORC). Reinjected heat is in the `dispatch_<year>` sheet of `results_rd.xlsx` and in `rep_dispatch_<year>.csv`, the geothermal operating mode per hour in the `mode_dispatch_<year>` sheet |
 | `rep_dispatch_<year>.csv` | (rd) dispatch on the representative days |
 | `lcoh_by_period.csv` | levelised cost of heat per milestone |
 | `computational_params.csv`, `tsa_summary.csv` | model size and solve time, clustering error |
