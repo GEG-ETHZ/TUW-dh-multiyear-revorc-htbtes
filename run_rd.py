@@ -9,7 +9,6 @@ Usage:
     python run_rd.py
 """
 
-import sys
 import os
 import time
 import numpy as np
@@ -91,14 +90,12 @@ except (AttributeError, OSError) as e:
 
 # ── Paths ─────────────────────────────────────────────────────────────────────
 _CASE_DIR     = Path(__file__).parent.resolve()          # paper2_munich/
-sys.path.insert(0, str(_CASE_DIR / "src"))           # generic models/utils
-sys.path.insert(0, str(_CASE_DIR))                       # data_loader, colors
 
-from data_loader import load_all_munich_data, build_uc_params
-from models.rd_model import DistrictHeatingModel
-from utils.solver import get_solver_name
-from colors import TECH_COLORS, get_color
-from orc_surrogate_maps import load_revorc_config, build_revorc_maps
+from dh_multiyear.data_loader import load_all_munich_data, build_uc_params
+from dh_multiyear.models.rd_model import DistrictHeatingModel
+from dh_multiyear.utils.solver import get_solver_name
+from dh_multiyear.colors import TECH_COLORS, get_color
+from dh_multiyear.orc_surrogate_maps import load_revorc_config, build_revorc_maps
 
 # ── Settings ──────────────────────────────────────────────────────────────────
 # INVESTMENT_YEARS and N_TYPICAL_DAYS are loaded from the 'extra' sheet of

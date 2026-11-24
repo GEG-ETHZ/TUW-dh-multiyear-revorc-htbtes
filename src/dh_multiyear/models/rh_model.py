@@ -21,15 +21,13 @@ import pandas as pd
 import numpy as np
 from typing import Dict, List, Any, Optional
 from loguru import logger
-import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).parent.parent))
-from preprocessing.time_aggregation import create_representative_hours_with_mapping
-from models.btes_params import period_params_for_build, load_arx_params
-from models.btes_constraints import add_btes_to_rh_model
-from utils.solver import get_solver_name, translate_options
-from utils.economic_calculations import (
+from dh_multiyear.preprocessing.time_aggregation import create_representative_hours_with_mapping
+from dh_multiyear.models.btes_params import period_params_for_build, load_arx_params
+from dh_multiyear.models.btes_constraints import add_btes_to_rh_model
+from dh_multiyear.utils.solver import get_solver_name, translate_options
+from dh_multiyear.utils.economic_calculations import (
     planning_horizon_end_year,
     linear_salvage_fraction_of_capex,
     discount_factor_end_of_calendar_year,
@@ -1207,7 +1205,7 @@ class DistrictHeatingModelRH:
         CAPEX is annualised over each asset's full lifetime using CRF(lt, r).
         """
         import pandas as pd
-        from utils.economic_calculations import capital_recovery_factor
+        from dh_multiyear.utils.economic_calculations import capital_recovery_factor
 
         m = self.model
         periods = sorted(self.investment_years)

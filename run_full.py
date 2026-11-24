@@ -17,7 +17,7 @@ Usage:
     python run_full.py
 """
 
-import sys, os, time
+import os, time
 import numpy as np
 import pandas as pd
 from datetime import datetime
@@ -75,15 +75,13 @@ except (AttributeError, OSError):
     pass
 
 _CASE_DIR     = Path(__file__).parent.resolve()
-sys.path.insert(0, str(_CASE_DIR / "src"))
-sys.path.insert(0, str(_CASE_DIR))
 
-from data_loader import load_all_munich_data, build_uc_params
-from models.full_model import DistrictHeatingModelFull
-from utils.solver import get_solver_name
+from dh_multiyear.data_loader import load_all_munich_data, build_uc_params
+from dh_multiyear.models.full_model import DistrictHeatingModelFull
+from dh_multiyear.utils.solver import get_solver_name
 from run_rd import (derive_saphea_capacities, derive_hthp_capex,
                     GEO_TECH, HTHP_TECH, REVORC_TECH, _inject_revorc_tech)
-from orc_surrogate_maps import load_revorc_config, build_revorc_maps
+from dh_multiyear.orc_surrogate_maps import load_revorc_config, build_revorc_maps
 
 # run_rd registers its own SIGINT/SIGTERM handler at import time, which would replace
 # ours and read run_rd's _IN_SOLVE flag (never set here). Re-install ours.
