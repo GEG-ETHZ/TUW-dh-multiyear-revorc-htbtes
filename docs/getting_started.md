@@ -49,9 +49,9 @@ Three temporal formulations share the same constraints:
 
 | Script | Model | Time structure | Use |
 |---|---|---|---|
-| `run_full.py` | `src/models/full_model.py` | all 8,760 h of every milestone year | reported results |
-| `run_rd.py` | `src/models/rd_model.py` | representative days (tsam), storage by Kotzur superposition of intra-day and inter-day states | design screening, field-size enumeration, sensitivities |
-| `run_rh.py` | `src/models/rh_model.py` | representative hours with a reduced storage index | experimental |
+| `run_full.py` | `src/dh_multiyear/models/full_model.py` | all 8,760 h of every milestone year | reported results |
+| `run_rd.py` | `src/dh_multiyear/models/rd_model.py` | representative days (tsam), storage by Kotzur superposition of intra-day and inter-day states | design screening, field-size enumeration, sensitivities |
+| `run_rh.py` | `src/dh_multiyear/models/rh_model.py` | representative hours with a reduced storage index | experimental |
 
 ## 2. Installation
 
@@ -82,7 +82,12 @@ Three temporal formulations share the same constraints:
    `revers_surrogates/README_reversible_ORC_HP_wrappers.txt`). They are available on request.
 
 Tested with Python 3.14, Pyomo 6.10, Gurobi 13.0, pandas 3.0, numpy 2.4, scikit-learn 1.8,
-tsam 3.2, pygfunction 2.3 on Linux. The code needs Python ≥ 3.10.
+tsam 3.2, pygfunction 2.3 on Linux. The package (`pyproject.toml`) declares Python 3.11–3.13,
+the versions the automated tests run on.
+
+The environment installs the model code in `src/dh_multiyear/` as the Python package
+`dh_multiyear` in editable mode (`pip install -e .`, also done by `pip install -r
+requirements.txt`). The run scripts stay in the repository folder and are used as before.
 
 ## 3. A first run
 
@@ -336,7 +341,7 @@ are reported with their gap.
 
 ## 9. The revORC component
 
-`orc_surrogate_maps.py` reads the `RevORC` sheet, assembles the hourly operating conditions of
+`src/dh_multiyear/orc_surrogate_maps.py` reads the `RevORC` sheet, assembles the hourly operating conditions of
 the representative or full year (brine temperature, pressure and flow per module, ambient
 temperature, network supply and return temperatures), evaluates the ORC and heat-pump
 off-design surrogates in `revers_surrogates/` once, and hands the MILP hourly maps of
@@ -371,7 +376,7 @@ Pipeline, all in `data/btes/`:
 2. **Library build** — `gen/build_model_library.py --label <label> [--out-suffix _x]
    [--k-wall] [--flow-levels 0.10,0.20,0.30]`. Collects all designs of a label into
    `design_library<suffix>.json` and one `btes_hourly_params<suffix>_n<N>.json` per size.
-3. **MILP** — `src/models/btes_params.py` loads the library; `src/models/btes_constraints.py`
+3. **MILP** — `src/dh_multiyear/models/btes_params.py` loads the library; `src/dh_multiyear/models/btes_constraints.py`
    adds the storage to the full, RD and RH models. The temperature state is tracked for every
    individual year of the horizon (the warm-up years included), the daily and interval updates
    of the aggregated models are exact unrollings of the hourly chain, and discharge is gated by
