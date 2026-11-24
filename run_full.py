@@ -80,6 +80,7 @@ sys.path.insert(0, str(_CASE_DIR))
 
 from data_loader import load_all_munich_data, build_uc_params
 from models.full_model import DistrictHeatingModelFull
+from utils.solver import get_solver_name
 from run_rd import (derive_saphea_capacities, derive_hthp_capex,
                     GEO_TECH, HTHP_TECH, REVORC_TECH, _inject_revorc_tech)
 from orc_surrogate_maps import load_revorc_config, build_revorc_maps
@@ -682,7 +683,7 @@ def main():
     try:
         globals()["_IN_SOLVE"] = True
         results_raw = model.solve(
-            solver_name='gurobi', tee=True, warmstart=warmstart,
+            solver_name=get_solver_name(), tee=True, warmstart=warmstart,
             MIPGap=SOLVE_MIPGAP, MIPFocus=1, Heuristics=0.20, Cuts=2,
             NoRelHeurTime=300, SolFiles=_solfiles, LogFile=_solfiles.rsplit('/', 1)[0] + '/gurobi.log',
             TimeLimit=SOLVE_TIMELIMIT_S, Threads=GRB_THREADS,

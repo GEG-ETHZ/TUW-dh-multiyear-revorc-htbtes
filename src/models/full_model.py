@@ -17,6 +17,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
+from utils.solver import get_solver_name, is_gurobi, translate_options
 from utils.economic_calculations import (
     planning_horizon_end_year,
     linear_salvage_fraction_of_capex,
@@ -873,15 +874,23 @@ class DistrictHeatingModelFull:
         model_type = "MILP" if (self.uc_enabled or self.btes_enabled) else "LP"
         logger.info(f"Full {model_type} model built: {m.nvariables()} variables, {m.nconstraints()} constraints")
 
-    def solve(self, solver_name="gurobi", tee=True, warmstart=False, **solver_options):
+    def solve(self, solver_name=None, tee=True, warmstart=False, **solver_options):
+        """Solve; solver_name defaults to the SOLVER environment variable.
+
+        Options are given in Gurobi names; for other solvers only the MIP gap and
+        the time limit are passed on (see utils/solver.py).
+        """
+        solver_name = solver_name or get_solver_name()
         logger.info(f"Solving Full model with {solver_name} …")
         solver = SolverFactory(solver_name)
-        for k, v in solver_options.items():
+        for k, v in translate_options(solver_name, solver_options).items():
             solver.options[k] = v
+        # warmstart is a keyword not every Pyomo solver interface accepts; Gurobi
+        # always gets it as before, other solvers only when there is a start.
+        warm_kw = {"warmstart": warmstart} if (is_gurobi(solver_name) or warmstart) else {}
         results = None
         try:
-            results = solver.solve(self.model, tee=tee, load_solutions=False,
-                                   warmstart=warmstart)
+            results = solver.solve(self.model, tee=tee, load_solutions=False, **warm_kw)
         except KeyboardInterrupt:
             logger.warning("Keyboard interrupt received.")
         if results is not None:

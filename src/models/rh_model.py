@@ -28,6 +28,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from preprocessing.time_aggregation import create_representative_hours_with_mapping
 from models.btes_params import period_params_for_build, load_arx_params
 from models.btes_constraints import add_btes_to_rh_model
+from utils.solver import get_solver_name, translate_options
 from utils.economic_calculations import (
     planning_horizon_end_year,
     linear_salvage_fraction_of_capex,
@@ -1084,11 +1085,17 @@ class DistrictHeatingModelRH:
     # ──────────────────────────────────────────────────────────────────
     #  SOLVE
     # ──────────────────────────────────────────────────────────────────
-    def solve(self, solver_name="gurobi", tee=True, **solver_options):
+    def solve(self, solver_name=None, tee=True, **solver_options):
+        """Solve; solver_name defaults to the SOLVER environment variable.
+
+        Options are given in Gurobi names; for other solvers only the MIP gap and
+        the time limit are passed on (see utils/solver.py).
+        """
+        solver_name = solver_name or get_solver_name()
         logger.info(f"Solving RH model with {solver_name} …")
         solver = SolverFactory(solver_name)
-        solver.options["MIPGap"] = solver_options.get("MIPGap", 0.01)
-        for k, v in solver_options.items():
+        opts = {"MIPGap": solver_options.get("MIPGap", 0.01), **solver_options}
+        for k, v in translate_options(solver_name, opts).items():
             solver.options[k] = v
         results = solver.solve(self.model, tee=tee)
         status = results.solver.termination_condition

@@ -39,6 +39,7 @@ sys.path.insert(0, str(ROOT))
 
 from data_loader import load_all_munich_data, build_uc_params      # noqa: E402
 from models.rh_model import DistrictHeatingModelRH                 # noqa: E402
+from utils.solver import get_solver_name                           # noqa: E402
 from run_rd import (derive_saphea_capacities, _inject_revorc_tech,
                     GEO_TECH, HTHP_TECH, REVORC_TECH)               # noqa: E402
 from orc_surrogate_maps import load_revorc_config, build_revorc_maps  # noqa: E402
@@ -172,7 +173,7 @@ def main():
     m.reinject_le_geo = pyo.Constraint(m.PERIODS, m.REP_HOURS, rule=_reinj_cap)
     logger.info("Reinjection bounded by geothermal generation")
 
-    results_raw = model.solve(solver_name="gurobi", tee=True, MIPGap=MIPGAP,
+    results_raw = model.solve(solver_name=get_solver_name(), tee=True, MIPGap=MIPGAP,
                               TimeLimit=TIMELIMIT_S, Threads=GRB_THREADS)
     res = model.get_results(export_dir=str(results_dir))
     npv_early = float(pyo.value(model.model.total_cost))

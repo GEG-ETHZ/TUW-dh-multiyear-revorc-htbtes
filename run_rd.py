@@ -96,6 +96,7 @@ sys.path.insert(0, str(_CASE_DIR))                       # data_loader, colors
 
 from data_loader import load_all_munich_data, build_uc_params
 from models.rd_model import DistrictHeatingModel
+from utils.solver import get_solver_name
 from colors import TECH_COLORS, get_color
 from orc_surrogate_maps import load_revorc_config, build_revorc_maps
 
@@ -2744,7 +2745,7 @@ def main():
 
         globals()["_IN_SOLVE"] = True
         results_raw = model.solve(
-            solver_name='gurobi', tee=True,
+            solver_name=get_solver_name(), tee=True,
             MIPGap=float(os.environ.get('GRB_MIP_GAP', 0.005)),
             MIPFocus=2, Heuristics=0.05, Cuts=2,
             # GRB_NUMERIC_FOCUS>0 trades speed for numerical care. The endogenous
