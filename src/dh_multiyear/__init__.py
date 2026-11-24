@@ -9,8 +9,10 @@ __author__ = "Your Name"
 
 from pathlib import Path
 
-# Project root directory
-PROJECT_ROOT = Path(__file__).parent.parent
+# Repository folder (holds data/, revers_surrogates/, results/). This file is
+# src/dh_multiyear/__init__.py, so the root is two levels up. It is only valid when
+# the package is used from a checkout of the repository (also `pip install -e .`).
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
 # Data directories
 DATA_DIR = PROJECT_ROOT / "data"

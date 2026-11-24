@@ -17,7 +17,7 @@ Usage:
     python run_full.py
 """
 
-import sys, os, time
+import os, time
 import numpy as np
 import pandas as pd
 from datetime import datetime
@@ -27,8 +27,8 @@ import pyomo.environ as pyo
 
 
 # ── Graceful stop ────────────────────────────────────────────────────────────
-# Registered at import time so it is active during model build as well as during
-# the solve. SIGTERM/SIGINT become KeyboardInterrupt: the solve wrapper catches it
+# Registered at the start of main() so it is active during model build as well as
+# during the solve. SIGTERM/SIGINT become KeyboardInterrupt: the solve wrapper catches it
 # and the run continues to the reporting step instead of dying, so `kill <pid>`
 # (NOT kill -9) stops a run early and still writes results. Gurobi additionally
 # dumps every new incumbent to <run>/incumbent_N.sol via the SolFiles parameter,
@@ -62,33 +62,32 @@ _IN_SOLVE = False
 _STOP_REQUESTS = 0
 
 
-for _sig in (_signal.SIGINT, _signal.SIGTERM):
+def _install_stop_handler():
+    for _sig in (_signal.SIGINT, _signal.SIGTERM):
+        try:
+            _signal.signal(_sig, _graceful_stop)
+        except (ValueError, OSError):
+            pass
+
+
+def _set_cpu_affinity():
     try:
-        _signal.signal(_sig, _graceful_stop)
-    except (ValueError, OSError):
+        os.sched_setaffinity(0, set(range(1, 41)))
+    except (AttributeError, OSError):
         pass
 
+
 GRB_THREADS = int(os.environ.get('GRB_THREADS', 40))
-try:
-    os.sched_setaffinity(0, set(range(1, 41)))
-except (AttributeError, OSError):
-    pass
 
 _CASE_DIR     = Path(__file__).parent.resolve()
-sys.path.insert(0, str(_CASE_DIR / "src"))
-sys.path.insert(0, str(_CASE_DIR))
 
-from data_loader import load_all_munich_data, build_uc_params
-from models.full_model import DistrictHeatingModelFull
-from utils.solver import get_solver_name
+from dh_multiyear.data_loader import load_all_munich_data, build_uc_params
+from dh_multiyear.models.full_model import DistrictHeatingModelFull
+from dh_multiyear.utils.solver import get_solver_name
 from run_rd import (derive_saphea_capacities, derive_hthp_capex,
-                    GEO_TECH, HTHP_TECH, REVORC_TECH, _inject_revorc_tech)
-from orc_surrogate_maps import load_revorc_config, build_revorc_maps
-
-# run_rd registers its own SIGINT/SIGTERM handler at import time, which would replace
-# ours and read run_rd's _IN_SOLVE flag (never set here). Re-install ours.
-for _sig in (_signal.SIGINT, _signal.SIGTERM):
-    _signal.signal(_sig, _graceful_stop)
+                    GEO_TECH, HTHP_TECH, REVORC_TECH, _inject_revorc_tech,
+                    set_plot_style)
+from dh_multiyear.orc_surrogate_maps import load_revorc_config, build_revorc_maps
 
 # ── Settings ──────────────────────────────────────────────────────────────────
 GEO_COLD_START_H   = 672    # 4 weeks: after a restart, geo produces 0 for 672 h
@@ -403,6 +402,10 @@ def _add_grid_capacity_charge_full(model, fee_eur_per_kW_yr, k_pump=0.0):
 
 
 def main():
+    # process-wide settings, made here rather than at import
+    _install_stop_handler()
+    _set_cpu_affinity()
+    set_plot_style()
     root = _CASE_DIR
     ts   = datetime.now().strftime('%Y%m%d_%H%M%S')
     # Scenario selector, mirroring run_rd: S1 = no storage, S2 = HT-BTES

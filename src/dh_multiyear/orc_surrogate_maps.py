@@ -56,7 +56,9 @@ import numpy as np
 import pandas as pd
 from loguru import logger
 
-_CASE_DIR = Path(__file__).parent.resolve()
+from dh_multiyear import PROJECT_ROOT
+
+_CASE_DIR = PROJECT_ROOT
 _ORC_DIR = _CASE_DIR / "revers_surrogates"
 _CACHE_DIR = _CASE_DIR / "data" / "revorc_maps_cache"
 

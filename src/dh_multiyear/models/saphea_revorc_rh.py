@@ -14,7 +14,7 @@ What a representative hour changes:
     clustering, where interval j-1 and j are contiguous blocks. In free RH it
     is skipped with a warning rather than silently approximated.
 
-    from models.saphea_revorc_rh import build_saphea_rh, build_revorc_rh
+    from dh_multiyear.models.saphea_revorc_rh import build_saphea_rh, build_revorc_rh
 """
 
 from typing import Dict, List

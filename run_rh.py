@@ -24,7 +24,6 @@ Env: SCENARIO, TECH_DATA, DH_DATA, N_REP_HOURS, RH_SEGMENTED, RH_SEASON_PURE,
 """
 
 import os
-import sys
 import time
 from datetime import datetime
 from pathlib import Path
@@ -34,16 +33,15 @@ import pyomo.environ as pyo
 from loguru import logger
 
 ROOT = Path(__file__).parent.resolve()
-sys.path.insert(0, str(ROOT / "src"))
-sys.path.insert(0, str(ROOT))
 
-from data_loader import load_all_munich_data, build_uc_params      # noqa: E402
-from models.rh_model import DistrictHeatingModelRH                 # noqa: E402
-from utils.solver import get_solver_name                           # noqa: E402
+from dh_multiyear.data_loader import load_all_munich_data, build_uc_params      # noqa: E402
+from dh_multiyear.models.rh_model import DistrictHeatingModelRH                 # noqa: E402
+from dh_multiyear.utils.solver import get_solver_name                           # noqa: E402
 from run_rd import (derive_saphea_capacities, _inject_revorc_tech,
-                    GEO_TECH, HTHP_TECH, REVORC_TECH)               # noqa: E402
-from orc_surrogate_maps import load_revorc_config, build_revorc_maps  # noqa: E402
-from models.saphea_revorc_rh import (build_saphea_rh, build_revorc_rh,
+                    GEO_TECH, HTHP_TECH, REVORC_TECH,
+                    set_cpu_affinity, set_plot_style)              # noqa: E402
+from dh_multiyear.orc_surrogate_maps import load_revorc_config, build_revorc_maps  # noqa: E402
+from dh_multiyear.models.saphea_revorc_rh import (build_saphea_rh, build_revorc_rh,
                                      rep_hour_profile)              # noqa: E402
 
 GRB_THREADS = int(os.environ.get("GRB_THREADS", 40))
@@ -56,6 +54,9 @@ SUPPORTED = {"N1", "N2", "N3", "N4", "N5", "N6"}
 
 
 def main():
+    # importing run_rd used to set these as a side effect; they are now explicit
+    set_cpu_affinity()
+    set_plot_style()
     t_start = time.perf_counter()
     scenario = os.environ.get("SCENARIO", "N1").upper()
     if scenario not in SUPPORTED:

@@ -30,7 +30,7 @@ Open an issue on GitHub with:
 
 ## Style
 
-- Python 3.10+, PEP 8, no new hard-coded paths: everything case-specific comes from the Excel
+- Python 3.11–3.13, PEP 8, no new hard-coded paths: everything case-specific comes from the Excel
   workbooks in `data/` or from environment variables.
 - Log through `loguru`, not `print`.
 - Do not commit solver output, results, the surrogate `.joblib` bundles or any measured network

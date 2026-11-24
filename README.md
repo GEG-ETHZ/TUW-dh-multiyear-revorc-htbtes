@@ -1,5 +1,5 @@
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue)](LICENSE)
-[![Python](https://img.shields.io/badge/python-3.10%2B-blue)](environment.yml)
+[![Python](https://img.shields.io/badge/python-3.11--3.13-blue)](pyproject.toml)
 [![Solver](https://img.shields.io/badge/solver-HiGHS%20%7C%20Gurobi-red)](#choosing-the-solver)
 
 ---
@@ -66,12 +66,13 @@ are written as an Excel workbook, CSV files and PNG figures per run.
 
 3. Open a terminal (conda prompt) in that folder and run
 
-   a. `conda env create -f environment.yml`
+   a. `conda env create -f environment.yml` (this also installs the model code itself as the
+      Python package `dh_multiyear`, in editable mode, so changes to `src/` take effect directly)
 
    b. `conda activate dh-multiyear`
 
    c. Only if you want to solve with Gurobi (see [Choosing the solver](#choosing-the-solver)):
-      `pip install gurobipy`, then
+      `pip install -e ".[gurobi]"`, then
       `python -c "import gurobipy; print(gurobipy.gurobi.version())"` to check that Gurobi
       finds its licence. If it reports `No HostID specified in license file`, point it at the
       file: `export GRB_LICENSE_FILE=/path/to/gurobi.lic`.
@@ -84,7 +85,14 @@ are written as an Excel workbook, CSV files and PNG figures per run.
    `revers_surrogates/models/` (see [Surrogate data](#surrogate-data)). Every other scenario
    runs without them.
 
-Alternative without conda: `pip install -r requirements.txt` into a Python 3.10+ environment.
+Alternative without conda: `pip install -r requirements.txt` into a Python 3.11–3.13
+environment, run in the repository folder. It installs the package and its dependencies, which
+are listed in `pyproject.toml`.
+
+To use the model from other Python code, install the repository into that environment
+(`pip install -e path/to/dh-multiyear-revorc-htbtes`) and import from the package, e.g.
+`from dh_multiyear.models.rd_model import DistrictHeatingModel`. Importing the package or the
+run scripts has no side effects; the input data stay in `data/` of the repository.
 
 ### Choosing the solver
 
@@ -140,21 +148,26 @@ how to set the model up for your own DH system.
 run_rd.py                     representative-days run (design screening, field-size enumeration)
 run_full.py                   full 8,760-h run (reported results)
 run_rh.py                     representative-hours run
-data_loader.py                reads the two Excel workbooks
-orc_surrogate_maps.py         evaluates the revORC surrogates offline -> hourly ORC/HP maps for the MILP
-full_reporting.py, rh_reporting.py, colors.py      reporting and figures
+full_reporting.py, rh_reporting.py      reporting of run_full / run_rh through the run_rd figures
 create_munich_data.py         builds an hourly workbook from measured network data (bring your own measurements)
 run_nice.sh                   runs any command at the lowest CPU priority
 
-src/models/full_model.py      hourly MILP (class DistrictHeatingModelFull)
-src/models/rd_model.py        representative-day MILP (class DistrictHeatingModel)
-src/models/rh_model.py        representative-hour MILP (class DistrictHeatingModelRH)
-src/models/saphea_revorc_rh.py  geothermal / revORC blocks for the RH model
-src/models/btes_params.py     HT-BTES parameter tables (age blocks, design library)
-src/models/btes_constraints.py  HT-BTES variables and constraints for all three models
-src/preprocessing/time_aggregation.py   tsam clustering, reduced storage index
-src/utils/economic_calculations.py      discounting, annuities, salvage, escalation
-src/utils/heat_pump_cop.py              Carnot / Hotmaps COP models
+pyproject.toml                package definition (name dh-multiyear, dependencies, extras)
+src/dh_multiyear/             the model code, importable as the package dh_multiyear:
+  data_loader.py              reads the two Excel workbooks
+  orc_surrogate_maps.py       evaluates the revORC surrogates offline -> hourly ORC/HP maps for the MILP
+  colors.py                   technology colours of the figures
+  models/full_model.py        hourly MILP (class DistrictHeatingModelFull)
+  models/rd_model.py          representative-day MILP (class DistrictHeatingModel)
+  models/rh_model.py          representative-hour MILP (class DistrictHeatingModelRH)
+  models/saphea_revorc_rh.py  geothermal / revORC blocks for the RH model
+  models/btes_params.py       HT-BTES parameter tables (age blocks, design library)
+  models/btes_constraints.py  HT-BTES variables and constraints for all three models
+  preprocessing/time_aggregation.py  tsam clustering, reduced storage index
+  utils/economic_calculations.py     discounting, annuities, salvage, escalation
+  utils/heat_pump_cop.py             Carnot / Hotmaps COP models
+  utils/solver.py                    solver choice (SOLVER) and option translation
+tests/                        regression tests (see tests/README.md)
 
 revers_surrogates/            revORC surrogate wrappers (design ANN, ORC off-design, HP off-design)
 revers_surrogates/models/     *.joblib surrogate bundles (available on request)
